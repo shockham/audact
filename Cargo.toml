@@ -1,0 +1,8 @@
+[package]
+name = "audact"
+version = "0.1.0"
+authors = ["shockham <samuel.hockham@gmail.com>"]
+
+[dependencies]
+futures = "0.1.1"
+cpal = "0.4.5"
