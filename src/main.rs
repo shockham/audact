@@ -6,6 +6,8 @@ use futures::task;
 use futures::task::Executor;
 use futures::task::Run;
 
+use cpal::UnknownTypeBuffer;
+
 use std::sync::Arc;
 
 struct AudactExecutor;
@@ -29,32 +31,20 @@ fn main() {
         let freq = 100.0;
         //let gap = Duration::from_millis(250);
 
-        // Produce a sinusoid of maximum amplitude.
         let samples_rate = format.samples_rate.0 as f32;
-        let mut data_source = (0u64..).map(move |t| t as f32 * freq * 2.0 * 3.141592 / samples_rate)     // 440 Hz
+        let mut data_source = (0u64..).map(move |t| t as f32 * freq * 2.0 * 3.141592 / samples_rate)
             .map(move |t| t.sin());
 
         voice.play();
 
         let task = stream.for_each(move |buffer| -> Result<_, ()> {
             match buffer {
-                cpal::UnknownTypeBuffer::U16(mut buffer) => {
-                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
-                        let value = ((value * 0.5 + 0.5) * std::u16::MAX as f32) as u16;
-                        for out in sample.iter_mut() { *out = value; }
+                UnknownTypeBuffer::F32(mut buffer) => {
+                    for (out, value) in buffer.iter_mut().zip(&mut data_source) {
+                        *out = value;
                     }
                 },
-                cpal::UnknownTypeBuffer::I16(mut buffer) => {
-                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
-                        let value = (value * std::i16::MAX as f32) as i16;
-                        for out in sample.iter_mut() { *out = value; }
-                    }
-                },
-                cpal::UnknownTypeBuffer::F32(mut buffer) => {
-                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
-                        for out in sample.iter_mut() { *out = value; }
-                    }
-                },
+                _ => (),
             };
 
             Ok(())
