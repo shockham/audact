@@ -14,18 +14,16 @@ fn main() {
     let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
     let event_loop = Arc::new(EventLoop::new());
 
-    voice_channel(&endpoint,  &event_loop).play();
+    voice_channel(&endpoint,  &event_loop, 100.0).play();
+    voice_channel(&endpoint,  &event_loop, 200.0).play();
 
     (*event_loop).run();
 }
 
-fn voice_channel(endpoint: &Endpoint, event_loop: &Arc<EventLoop>) -> Voice {
+fn voice_channel(endpoint: &Endpoint, event_loop: &Arc<EventLoop>, freq: f32) -> Voice {
     let format = endpoint.get_supported_formats_list().unwrap().next().expect("Failed to get endpoint format");
     let (voice, stream) = cpal::Voice::new(&endpoint, &format,
                                                &event_loop).expect("Failed to create a voice");
-
-    let freq = 100.0;
-    //let gap = Duration::from_millis(250);
 
     let samples_rate = format.samples_rate.0 as f32;
     let mut data_source = (0u64..).map(move |t| t as f32 * freq * 2.0 * 3.141592 / samples_rate)
