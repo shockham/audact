@@ -33,7 +33,7 @@ fn main() {
             // simple 16-step sequencer
             for step in 0 .. 16 {
                 for i in 0 .. voice_steps.len() {
-                    if let Err(_) = voice_steps[i].1.binary_search(&step) {
+                    if let Ok(_) = voice_steps[i].1.binary_search(&step) {
                         voice_steps[i].0.play();
                     } else {
                         voice_steps[i].0.pause();
