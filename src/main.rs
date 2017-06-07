@@ -57,14 +57,6 @@ fn main() {
     (*audact.event_loop).run();
 }
 
-fn sine_wave(t:f32) -> f32 {
-    t.sin()
-}
-
-fn square_wave(t:f32) -> f32 {
-    t.sin().round()
-}
-
 impl Audact {
     fn new() -> Audact {
         let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
@@ -77,6 +69,14 @@ impl Audact {
         }
     }
 
+    fn sine_wave(t:f32) -> f32 {
+        t.sin()
+    }
+
+    fn square_wave(t:f32) -> f32 {
+        t.sin().round()
+    }
+
     fn voice_channel(&mut self, freq: f32, wave: Wave) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
             .unwrap().next().expect("Failed to get endpoint format");
@@ -84,8 +84,8 @@ impl Audact {
                                                    &self.event_loop).expect("Failed to create a voice");
 
         let wave = match wave {
-            Wave::Sine => sine_wave,
-            Wave::Square => square_wave,
+            Wave::Sine => Audact::sine_wave,
+            Wave::Square => Audact::square_wave,
         };
 
         let samples_rate = format.samples_rate.0 as f32;
