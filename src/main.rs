@@ -17,13 +17,24 @@ enum Wave {
     Square,
 }
 
+
+struct Audact {
+    endpoint: Endpoint,
+    event_loop: Arc<EventLoop>,
+}
+
 fn main() {
     let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
     let event_loop = Arc::new(EventLoop::new());
 
+    let audact = Audact {
+        endpoint: endpoint,
+        event_loop: event_loop,
+    };
+
     let mut voice_steps = vec![
-        (voice_channel(&endpoint,  &event_loop, 100.0, Wave::Sine), [0,4,8,12]),
-        (voice_channel(&endpoint,  &event_loop, 200.0, Wave::Square), [2,6,10,14]),
+        (voice_channel(&audact.endpoint,  &audact.event_loop, 100.0, Wave::Sine), [0,4,8,12]),
+        (voice_channel(&audact.endpoint,  &audact.event_loop, 200.0, Wave::Square), [2,6,10,14]),
     ];
 
     let bpm_duration = Duration::from_millis(500); // 120 bpm
@@ -44,7 +55,7 @@ fn main() {
         }
     });
 
-    (*event_loop).run();
+    (*audact.event_loop).run();
 }
 
 fn sine_wave(t:f32) -> f32 {
