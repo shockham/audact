@@ -9,6 +9,8 @@ use futures::task::Run;
 use cpal::{ UnknownTypeBuffer, Endpoint, EventLoop, Voice };
 
 use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 enum Wave {
     Sine,
@@ -19,8 +21,28 @@ fn main() {
     let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
     let event_loop = Arc::new(EventLoop::new());
 
-    voice_channel(&endpoint,  &event_loop, 100.0, Wave::Sine).play();
-    voice_channel(&endpoint,  &event_loop, 200.0, Wave::Square).play();
+    let mut voice_steps = vec![
+        (voice_channel(&endpoint,  &event_loop, 100.0, Wave::Sine), [0,4,8,12]),
+        (voice_channel(&endpoint,  &event_loop, 200.0, Wave::Square), [2,6,10,14]),
+    ];
+
+    let bpm_duration = Duration::from_millis(500); // 120 bpm
+
+    thread::spawn(move || {
+        loop {
+            // simple 16-step sequencer
+            for step in 0 .. 16 {
+                for i in 0 .. voice_steps.len() {
+                    if let Err(_) = voice_steps[i].1.binary_search(&step) {
+                        voice_steps[i].0.play();
+                    } else {
+                        voice_steps[i].0.pause();
+                    }
+                }
+                thread::sleep(bpm_duration);
+            }
+        }
+    });
 
     (*event_loop).run();
 }
