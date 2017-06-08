@@ -23,9 +23,9 @@ pub struct Audact {
     /// The endpoint that audact will play through
     endpoint: Endpoint,
     /// The cpal event loop
-    pub event_loop: Arc<EventLoop>,
+    event_loop: Arc<EventLoop>,
     /// Vec of voice channels that audact will play
-    pub voice_channels: Vec<(Voice, Vec<i32>)>,
+    voice_channels: Vec<(Voice, Vec<i32>)>,
 }
 
 /// implementation for the audact struct
