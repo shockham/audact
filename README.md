@@ -1,16 +1,12 @@
-/*!
+
 Simple synth and sequencing lib
-*/
 
-#![deny(missing_docs)]
+Usage:
 
-extern crate cpal;
-extern crate futures;
+```rust
+extern crate audact;
 
-
-/// Module for the main audact system
-pub mod system;
-use system::{ Audact, Wave };
+use audact::system::{ Audact, Wave };
 
 fn main() {
     let mut audact = Audact::new(16, 120);
@@ -20,4 +16,4 @@ fn main() {
 
     Audact::start(audact);
 }
-
+```
