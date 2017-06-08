@@ -7,6 +7,8 @@ use cpal;
 use cpal::{ UnknownTypeBuffer, Endpoint, EventLoop, Voice };
 
 use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 /// Enum of available waveforms
 pub enum Wave {
@@ -23,7 +25,7 @@ pub struct Audact {
     /// The cpal event loop
     pub event_loop: Arc<EventLoop>,
     /// Vec of voice channels that audact will play
-    pub voice_channels: Vec<Voice>,
+    pub voice_channels: Vec<(Voice, Vec<i32>)>,
 }
 
 /// implementation for the audact struct
@@ -51,7 +53,7 @@ impl Audact {
     }
 
     /// Add a voice channel to audact for synth playback
-    pub fn voice_channel(&mut self, freq: f32, wave: Wave) -> Result<bool, bool> {
+    pub fn voice_channel(&mut self, freq: f32, wave: Wave, seq: Vec<i32>) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
             .unwrap().next().expect("Failed to get endpoint format");
         let (voice, stream) = cpal::Voice::new(&self.endpoint, &format,
@@ -89,8 +91,33 @@ impl Audact {
             task::spawn(task).execute(Arc::new(AudactExecutor));
         }
 
-        self.voice_channels.push(voice);
+        self.voice_channels.push((voice, seq));
 
         Ok(true)
+    }
+
+    /// Kick off audact to start
+    pub fn start(audact:Audact) {
+        let bpm_duration = Duration::from_millis(500); // 120 bpm
+
+        let mut tmp_voice_channels = audact.voice_channels;
+
+        thread::spawn(move || {
+            loop {
+                // simple 16-step sequencer
+                for step in 0 .. 16 {
+                    for i in 0 .. tmp_voice_channels.len() {
+                        if let Ok(_) = tmp_voice_channels[i].1.binary_search(&step) {
+                            tmp_voice_channels[i].0.play();
+                        } else {
+                            tmp_voice_channels[i].0.pause();
+                        }
+                    }
+                    thread::sleep(bpm_duration);
+                }
+            }
+        });
+
+        (*audact.event_loop).run();
     }
 }
