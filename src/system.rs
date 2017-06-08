@@ -26,12 +26,16 @@ pub struct Audact {
     event_loop: Arc<EventLoop>,
     /// Vec of voice channels that audact will play
     voice_channels: Vec<(Voice, Vec<i32>)>,
+    /// The number of steps for the sequencer
+    steps: i32,
+    /// The duraction that determines the bpm
+    bpm_duration: Duration,
 }
 
 /// implementation for the audact struct
 impl Audact {
     /// Creates a new instance of audact
-    pub fn new() -> Audact {
+    pub fn new(steps:i32, bpm:i32) -> Audact {
         let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
         let event_loop = Arc::new(EventLoop::new());
 
@@ -39,6 +43,8 @@ impl Audact {
             endpoint: endpoint,
             event_loop: event_loop,
             voice_channels: Vec::new(),
+            steps: steps,
+            bpm_duration: Duration::from_millis(((60f32 / bpm as f32) * 1000f32) as u64),
         }
     }
 
@@ -98,14 +104,15 @@ impl Audact {
 
     /// Kick off audact to start
     pub fn start(audact:Audact) {
-        let bpm_duration = Duration::from_millis(500); // 120 bpm
-
+        // grab some values from the stuct to be moved
+        let steps = audact.steps;
+        let bpm_duration = audact.bpm_duration;
         let mut tmp_voice_channels = audact.voice_channels;
 
         thread::spawn(move || {
             loop {
                 // simple 16-step sequencer
-                for step in 0 .. 16 {
+                for step in 0 .. steps {
                     for i in 0 .. tmp_voice_channels.len() {
                         if let Ok(_) = tmp_voice_channels[i].1.binary_search(&step) {
                             tmp_voice_channels[i].0.play();
