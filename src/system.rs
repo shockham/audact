@@ -63,7 +63,7 @@ impl Audact {
     }
 
     /// Generates white noise from samples
-    fn noise_wave(t:f32) -> f32 {
+    fn noise_wave(_:f32) -> f32 {
         random()
     }
 
