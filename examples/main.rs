@@ -14,6 +14,9 @@ fn main() {
     audact.voice_channel(50.0, Wave::Sine, vec![0,1,2,3,4,5,6,7]).unwrap();
     audact.voice_channel(75.0, Wave::Sine, vec![8,9,10,11,12,13,14,15]).unwrap();
 
+    // percussion
+    audact.voice_channel(150.0, Wave::Noise, vec![0,4,8,12]).unwrap();
+
     Audact::start(audact);
 }
 

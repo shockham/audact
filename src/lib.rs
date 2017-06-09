@@ -6,6 +6,7 @@ Simple synth and sequencing lib
 
 extern crate cpal;
 extern crate futures;
+extern crate rand;
 
 /// Module for the main audact system
 pub mod system;

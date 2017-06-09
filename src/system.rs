@@ -10,12 +10,16 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
+use rand::random;
+
 /// Enum of available waveforms
 pub enum Wave {
     /// Sine waveform
     Sine,
     /// Square waveform
     Square,
+    /// White noise waveform
+    Noise,
 }
 
 /// Struct for the main audact system
@@ -58,6 +62,11 @@ impl Audact {
         t.sin().round()
     }
 
+    /// Generates white noise from samples
+    fn noise_wave(t:f32) -> f32 {
+        random()
+    }
+
     /// Add a voice channel to audact for synth playback
     pub fn voice_channel(&mut self, freq: f32, wave: Wave, seq: Vec<i32>) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
@@ -68,6 +77,7 @@ impl Audact {
         let wave = match wave {
             Wave::Sine => Audact::sine_wave,
             Wave::Square => Audact::square_wave,
+            Wave::Noise => Audact::noise_wave,
         };
 
         let samples_rate = format.samples_rate.0 as f32;

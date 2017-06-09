@@ -12,3 +12,4 @@ description = "Simple synth and sequencing lib"
 [dependencies]
 futures = "0.1.1"
 cpal = "0.4.5"
+rand = "0.3.15"
