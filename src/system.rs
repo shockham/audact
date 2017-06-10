@@ -18,6 +18,8 @@ pub enum Wave {
     Sine,
     /// Square waveform
     Square,
+    /// Saw-tooth waveform
+    Saw,
     /// White noise waveform
     Noise,
 }
@@ -48,7 +50,7 @@ impl Audact {
             event_loop: event_loop,
             voice_channels: Vec::new(),
             steps: steps,
-            bpm_duration: Duration::from_millis(((60f32 / bpm as f32) * 1000f32) as u64),
+            bpm_duration: Duration::from_millis(((60f32 / bpm as f32) * 1000f32) as u64 / 4u64),
         }
     }
 
@@ -60,6 +62,11 @@ impl Audact {
     /// Generates a square wave from samples
     fn square_wave(t:f32) -> f32 {
         t.sin().round()
+    }
+
+    /// Generates a saw-tooth wave from samples
+    fn saw_wave(t:f32) -> f32 {
+        t - t.floor()
     }
 
     /// Generates white noise from samples
@@ -77,6 +84,7 @@ impl Audact {
         let wave = match wave {
             Wave::Sine => Audact::sine_wave,
             Wave::Square => Audact::square_wave,
+            Wave::Saw => Audact::saw_wave,
             Wave::Noise => Audact::noise_wave,
         };
 
