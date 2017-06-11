@@ -10,3 +10,5 @@ extern crate rand;
 
 /// Module for the main audact system
 pub mod system;
+/// Module containing note frequencies
+pub mod notes;
