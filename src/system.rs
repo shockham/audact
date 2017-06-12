@@ -89,7 +89,7 @@ impl Audact {
         };
 
         let samples_rate = format.samples_rate.0 as f32;
-        let mut data_source = (0u64..).map(move |t| t as f32 * freq * 2.0 * 3.141592 / samples_rate)
+        let mut data_source = (0u64..).map(move |t| t as f32 * freq * 3.141592 / samples_rate)
             .map(wave);
 
         let task = stream.for_each(move |buffer| -> Result<_, ()> {
