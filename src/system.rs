@@ -41,7 +41,7 @@ pub struct Audact {
 /// implementation for the audact struct
 impl Audact {
     /// Creates a new instance of audact
-    pub fn new(steps:i32, bpm:i32) -> Audact {
+    pub fn new(steps:i32, bpm:i32, per_bar:f32) -> Audact {
         let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
         let event_loop = Arc::new(EventLoop::new());
 
@@ -50,7 +50,7 @@ impl Audact {
             event_loop: event_loop,
             voice_channels: Vec::new(),
             steps: steps,
-            bpm_duration: Duration::from_millis(((60f32 / bpm as f32) * 1000f32) as u64 / 4u64),
+            bpm_duration: Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64),
         }
     }
 

@@ -3,7 +3,7 @@ extern crate audact;
 use audact::system::{ Audact, Wave };
 
 fn main() {
-    let mut audact = Audact::new(16, 120);
+    let mut audact = Audact::new(16, 120, 4f32);
 
     //lead
     audact.voice_channel(100.0, Wave::Saw, vec![0,4,8,12]).unwrap();
