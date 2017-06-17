@@ -1,5 +1,8 @@
+#audact
 
 Simple synth and sequencing lib
+
+Just has simple sine, square, saw and noise waveforms at the moment. Planning on putting in filters.
 
 Usage:
 
