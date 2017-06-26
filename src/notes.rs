@@ -1,3 +1,28 @@
+
+/// C 2
+pub const C2:f32 = 65.41;
+/// C Sharp 2
+pub const CS2:f32 = 69.30;
+/// D 2
+pub const D2:f32 = 73.42;
+/// D Sharp 2
+pub const DS2:f32 = 77.78;
+/// E 2
+pub const E2:f32 = 82.41;
+/// F 2
+pub const F2:f32 = 87.31;
+/// F Sharp 2
+pub const FS2:f32 = 92.50;
+/// G 2
+pub const G2:f32 = 98.00;
+/// G Sharp 2
+pub const GS2:f32 = 103.8;
+/// A 2
+pub const A2:f32 = 110.0;
+/// A Sharp 2
+pub const AS2:f32 = 116.5;
+/// B 2
+pub const B2:f32 = 123.5;
 /// C 3
 pub const C3:f32 = 130.8;
 /// C Sharp 3
