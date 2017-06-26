@@ -71,3 +71,27 @@ pub const A4:f32 = 440.00;
 pub const AS4:f32 = 466.16;
 /// B 4
 pub const B4:f32 = 493.88;
+/// C 5
+pub const C5:f32 = 523.3;
+/// C Sharp 5
+pub const CS5:f32 = 554.4;
+/// D 5
+pub const D5:f32 = 587.3;
+/// D Sharp 5
+pub const DS5:f32 = 622.3;
+/// E 5
+pub const E5:f32 = 659.3;
+/// F 5
+pub const F5:f32 = 698.5;
+/// F Sharp 5
+pub const FS5:f32 = 740.0;
+/// G 5
+pub const G5:f32 = 784.0;
+/// G Sharp 5
+pub const GS5:f32 = 830.6;
+/// A 5
+pub const A5:f32 = 880.0;
+/// A Sharp 5
+pub const AS5:f32 = 932.3;
+/// B 5
+pub const B5:f32 = 987.8;
