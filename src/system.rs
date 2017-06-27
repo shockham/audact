@@ -75,7 +75,7 @@ impl Audact {
     }
 
     /// Add a voice channel to audact for synth playback
-    pub fn voice_channel(&mut self, freq: f32, wave: Wave, seq: Vec<i32>) -> Result<bool, bool> {
+    pub fn voice_channel(&mut self, freq: f32, wave: Wave, filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
             .unwrap().next().expect("Failed to get endpoint format");
         let (voice, stream) = cpal::Voice::new(&self.endpoint, &format,
@@ -88,9 +88,13 @@ impl Audact {
             Wave::Noise => Audact::noise_wave,
         };
 
+        let (hp, lp) = filter;
+
         let samples_rate = format.samples_rate.0 as f32;
         let mut data_source = (0u64..).map(move |t| t as f32 * freq * 3.141592 / samples_rate) // freq
             .map(wave) // waveform creation
+            .map(move |s| s.max(hp)) // high-pass
+            .map(move |s| s.min(lp)) // low-pass
             .map(|s| s * 0.1f32); // volume
 
         let task = stream.for_each(move |buffer| -> Result<_, ()> {
