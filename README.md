@@ -1,4 +1,6 @@
 # audact
+[![crates.io version](https://img.shields.io/crates/v/audact.svg)](https://crates.io/crates/audact)
+[![Build status](https://travis-ci.org/shockham/audact.svg?branch=master)](https://travis-ci.org/shockham/audact)
 
 Simple synth and sequencing lib
 
