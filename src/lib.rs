@@ -5,7 +5,7 @@ Just has simple sine, square, saw and noise waveforms at the moment. Planning on
 
 Usage:
 
-```
+```no_run
 extern crate audact;
 
 use audact::system::{ Audact, Wave };
