@@ -107,16 +107,14 @@ impl Audact {
                     }
                 },
                 UnknownTypeBuffer::U16(mut buffer) => {
-                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
-                        let value = ((value * 0.5 + 0.5) * std::u16::MAX as f32) as u16;
-                        for out in sample.iter_mut() { *out = value; }
+                    for (out, value) in buffer.iter_mut().zip(&mut data_source) {
+                        *out = ((value * 0.5 + 0.5) * std::u16::MAX as f32) as u16;
                     }
                 },
 
                 UnknownTypeBuffer::I16(mut buffer) => {
-                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
-                        let value = (value * std::i16::MAX as f32) as i16;
-                        for out in sample.iter_mut() { *out = value; }
+                    for (out, value) in buffer.iter_mut().zip(&mut data_source) {
+                        *out = (value * std::i16::MAX as f32) as i16;
                     }
                 },
             };
