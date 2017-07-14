@@ -12,6 +12,8 @@ use std::time::Duration;
 
 use rand::random;
 
+use std;
+
 /// Enum of available waveforms
 pub enum Wave {
     /// Sine waveform
@@ -104,7 +106,19 @@ impl Audact {
                         *out = value;
                     }
                 },
-                _ => (),
+                UnknownTypeBuffer::U16(mut buffer) => {
+                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
+                        let value = ((value * 0.5 + 0.5) * std::u16::MAX as f32) as u16;
+                        for out in sample.iter_mut() { *out = value; }
+                    }
+                },
+
+                UnknownTypeBuffer::I16(mut buffer) => {
+                    for (sample, value) in buffer.chunks_mut(format.channels.len()).zip(&mut data_source) {
+                        let value = (value * std::i16::MAX as f32) as i16;
+                        for out in sample.iter_mut() { *out = value; }
+                    }
+                },
             };
 
             Ok(())
