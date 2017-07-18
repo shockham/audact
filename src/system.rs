@@ -79,7 +79,32 @@ impl Audact {
     /// Add a voice channel to audact for synth playback
     pub fn voice_channel(&mut self, freq: f32, wave: Wave, filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
-            .unwrap().next().expect("Failed to get endpoint format");
+            .unwrap()
+            .fold(None, |f1, f2| {
+                if f1.is_none() {
+                    return Some(f2);
+                }
+
+                let f1 = f1.unwrap();
+
+                // We privilege f32 formats to avoid a conversion.
+                if f2.data_type == cpal::SampleFormat::F32 && f1.data_type != cpal::SampleFormat::F32 {
+                    return Some(f2);
+                }
+
+                // Do not go below 44100 if possible.
+                if f1.samples_rate.0 < 44100 {
+                    return Some(f2);
+                }
+
+                // Priviledge outputs with 2 channels for now.
+                if f2.channels.len() == 2 && f1.channels.len() != 2 {
+                    return Some(f2);
+                }
+
+                Some(f1)
+            })
+            .expect("The endpoint doesn't support any format!?");
         let (voice, stream) = cpal::Voice::new(&self.endpoint, &format,
                                                    &self.event_loop).expect("Failed to create a voice");
 
