@@ -77,7 +77,8 @@ impl Audact {
     }
 
     /// Add a voice channel to audact for synth playback
-    pub fn voice_channel(&mut self, freq: f32, wave: Wave, filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
+    pub fn voice_channel(&mut self, freq: f32, wave: Wave, volume: f32,
+                         filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
             .unwrap()
             .fold(None, |f1, f2| {
@@ -122,7 +123,7 @@ impl Audact {
             .map(wave) // waveform creation
             .map(move |s| s.max(hp)) // high-pass
             .map(move |s| s.min(lp)) // low-pass
-            .map(|s| s * 0.1f32); // volume
+            .map(move |s| s * volume * 0.1f32); // volume
 
         let task = stream.for_each(move |buffer| -> Result<_, ()> {
             match buffer {
@@ -136,7 +137,6 @@ impl Audact {
                         *out = ((value * 0.5 + 0.5) * std::u16::MAX as f32) as u16;
                     }
                 },
-
                 UnknownTypeBuffer::I16(mut buffer) => {
                     for (out, value) in buffer.iter_mut().zip(&mut data_source) {
                         *out = (value * std::i16::MAX as f32) as i16;
