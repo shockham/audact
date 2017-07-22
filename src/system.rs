@@ -33,7 +33,7 @@ pub struct Audact {
     /// The cpal event loop
     event_loop: Arc<EventLoop>,
     /// Vec of voice channels that audact will play
-    voice_channels: Vec<(Voice, Vec<i32>)>,
+    channels: Vec<(Voice, Vec<i32>)>,
     /// The number of steps for the sequencer
     steps: i32,
     /// The duraction that determines the bpm
@@ -50,7 +50,7 @@ impl Audact {
         Audact {
             endpoint: endpoint,
             event_loop: event_loop,
-            voice_channels: Vec::new(),
+            channels: Vec::new(),
             steps: steps,
             bpm_duration: Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64),
         }
@@ -77,7 +77,7 @@ impl Audact {
     }
 
     /// Add a voice channel to audact for synth playback
-    pub fn voice_channel(&mut self, freq: f32, wave: Wave, volume: f32,
+    pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
                          filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
         let format = self.endpoint.get_supported_formats_list()
             .unwrap()
@@ -157,7 +157,7 @@ impl Audact {
             task::spawn(task).execute(Arc::new(AudactExecutor));
         }
 
-        self.voice_channels.push((voice, seq));
+        self.channels.push((voice, seq));
 
         Ok(true)
     }
@@ -167,7 +167,7 @@ impl Audact {
         // grab some values from the stuct to be moved
         let steps = audact.steps;
         let bpm_duration = audact.bpm_duration;
-        let mut tmp_voice_channels = audact.voice_channels;
+        let mut tmp_voice_channels = audact.channels;
 
         thread::spawn(move || {
             loop {
