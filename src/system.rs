@@ -159,14 +159,15 @@ impl Audact {
         Ok(true)
     }
 
-    /// Kick off audact to start
+    /// Kick off audact to start and loop 'bars' times
     pub fn start(audact:Audact, bars: i32) {
         // grab some values from the stuct to be moved
         let steps = audact.steps;
         let bpm_duration = audact.bpm_duration;
         let mut tmp_voice_channels = audact.channels;
+        let tmp_event_loop = audact.event_loop;
 
-        thread::spawn(move || {
+        let handle = thread::spawn(move || {
             for _ in 0 .. bars {
                 // simple 16-step sequencer
                 for step in 0 .. steps {
@@ -186,6 +187,10 @@ impl Audact {
             }
         });
 
-        (*audact.event_loop).run();
+        thread::spawn(move || {
+            tmp_event_loop.run();
+        });
+
+        let _ = handle.join().unwrap();
     }
 }
