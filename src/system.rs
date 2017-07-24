@@ -118,9 +118,7 @@ impl Audact {
         let samples_rate = format.samples_rate.0 as f32;
         let mut data_source = (0u64..).map(move |t| t as f32 * freq * 3.141592 / samples_rate) // freq
             .map(wave) // waveform creation
-            .map(move |s| s.max(hp)) // high-pass
-            .map(move |s| s.min(lp)) // low-pass
-            .map(move |s| s * volume * 0.1f32); // volume
+            .map(move |s| s.max(hp).min(lp) * volume * 0.1f32); // hard edge filtering & volume
 
         let task = stream.for_each(move |buffer| -> Result<_, ()> {
             match buffer {
