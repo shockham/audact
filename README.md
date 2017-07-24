@@ -5,7 +5,10 @@
 
 Simple synth and sequencing lib
 
-Just has simple sine, square, saw and noise waveforms at the moment. Planning on putting in filters.
+Contains:
+- Simple sine, square, saw and noise waveforms.
+- Hard-edge cut-off filters.
+- Basic sequencing of a single pattern.
 
 Usage:
 

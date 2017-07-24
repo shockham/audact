@@ -26,4 +26,3 @@ fn main() {
 
     Audact::start(audact, 1);
 }
-
