@@ -24,6 +24,6 @@ fn main() {
     audact.channel(std_note_freq(0), Wave::Noise, 1f32, (0.65f32, 1f32), vec![2,6,10,14]).unwrap();
     audact.channel(std_note_freq(0), Wave::Noise, 1f32, (0f32, 0.35f32), vec![0,4,8,12]).unwrap();
 
-    Audact::start(audact);
+    Audact::start(audact, 1);
 }
 
