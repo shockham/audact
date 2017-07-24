@@ -85,19 +85,15 @@ impl Audact {
                 if f1.is_none() {
                     return Some(f2);
                 }
-
                 let f1 = f1.unwrap();
-
                 // We privilege f32 formats to avoid a conversion.
                 if f2.data_type == cpal::SampleFormat::F32 && f1.data_type != cpal::SampleFormat::F32 {
                     return Some(f2);
                 }
-
                 // Do not go below 44100 if possible.
                 if f1.samples_rate.0 < 44100 {
                     return Some(f2);
                 }
-
                 // Priviledge outputs with 2 channels for now.
                 if f2.channels.len() == 2 && f1.channels.len() != 2 {
                     return Some(f2);
@@ -106,6 +102,7 @@ impl Audact {
                 Some(f1)
             })
             .expect("The endpoint doesn't support any format!?");
+
         let (voice, stream) = cpal::Voice::new(&self.endpoint, &format,
                                                    &self.event_loop).expect("Failed to create a voice");
 
