@@ -9,10 +9,12 @@ use cpal::{ UnknownTypeBuffer, Endpoint, EventLoop, Voice };
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
+use std::u16;
+use std::i16;
+use std::f32::consts::PI;
 
 use rand::random;
 
-use std;
 
 /// Enum of available waveforms
 pub enum Wave {
@@ -57,23 +59,23 @@ impl Audact {
     }
 
     /// Generates a sine wave from samples
-    fn sine_wave(t:f32) -> f32 {
-        t.sin()
+    fn sine_wave(t:f32) -> (f32, f32) {
+        (t, t.sin())
     }
 
     /// Generates a square wave from samples
-    fn square_wave(t:f32) -> f32 {
-        t.sin().round()
+    fn square_wave(t:f32) -> (f32, f32) {
+        (t, t.sin().round())
     }
 
     /// Generates a saw-tooth wave from samples
-    fn saw_wave(t:f32) -> f32 {
-        t - t.floor()
+    fn saw_wave(t:f32) -> (f32, f32) {
+        (t, t - t.floor())
     }
 
     /// Generates white noise from samples
-    fn noise_wave(_:f32) -> f32 {
-        random()
+    fn noise_wave(t:f32) -> (f32, f32) {
+        (t, random())
     }
 
     /// Add a voice channel to audact for synth playback
@@ -116,9 +118,13 @@ impl Audact {
         let (hp, lp) = filter;
 
         let samples_rate = format.samples_rate.0 as f32;
-        let mut data_source = (0u64..).map(move |t| t as f32 * freq * 3.141592 / samples_rate) // freq
+        let mut data_source = (0u64..).map(move |t| t as f32 * freq * PI / samples_rate) // freq
             .map(wave) // waveform creation
-            .map(move |s| s.max(hp).min(lp) * volume * 0.1f32); // hard edge filtering & volume
+            .map(move |(_, s)| {
+                s.max(hp) // high pass
+                    .min(lp) // low pass
+                    * volume * 0.1f32 // volume
+            });// hard edge filtering & volume
 
         let task = stream.for_each(move |buffer| -> Result<_, ()> {
             match buffer {
@@ -129,12 +135,12 @@ impl Audact {
                 },
                 UnknownTypeBuffer::U16(mut buffer) => {
                     for (out, value) in buffer.iter_mut().zip(&mut data_source) {
-                        *out = ((value * 0.5 + 0.5) * std::u16::MAX as f32) as u16;
+                        *out = ((value * 0.5 + 0.5) * u16::MAX as f32) as u16;
                     }
                 },
                 UnknownTypeBuffer::I16(mut buffer) => {
                     for (out, value) in buffer.iter_mut().zip(&mut data_source) {
-                        *out = (value * std::i16::MAX as f32) as i16;
+                        *out = (value * i16::MAX as f32) as i16;
                     }
                 },
             };
