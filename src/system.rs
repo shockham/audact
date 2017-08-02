@@ -1,16 +1,12 @@
-use futures::stream::Stream;
-use futures::task;
-use futures::task::Executor;
-use futures::task::Run;
+use rodio;
+use rodio::Endpoint;
+use rodio::Sink;
+use rodio::source;
+use rodio::buffer::SamplesBuffer;
+use rodio::Source;
 
-use cpal;
-use cpal::{ UnknownTypeBuffer, Endpoint, EventLoop, Voice };
-
-use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
-use std::u16;
-use std::i16;
 use std::f32::consts::PI;
 
 use rand::random;
@@ -32,10 +28,8 @@ pub enum Wave {
 pub struct Audact {
     /// The endpoint that audact will play through
     endpoint: Endpoint,
-    /// The cpal event loop
-    event_loop: Arc<EventLoop>,
     /// Vec of voice channels that audact will play
-    channels: Vec<(Voice, Vec<i32>)>,
+    channels: Vec<(Sink, Vec<i32>)>,
     /// The number of steps for the sequencer
     steps: i32,
     /// The duraction that determines the bpm
@@ -46,12 +40,10 @@ pub struct Audact {
 impl Audact {
     /// Creates a new instance of audact
     pub fn new(steps:i32, bpm:i32, per_bar:f32) -> Audact {
-        let endpoint = cpal::get_default_endpoint().expect("Failed to get default endpoint");
-        let event_loop = Arc::new(EventLoop::new());
+        let endpoint = rodio::get_default_endpoint().unwrap();
 
         Audact {
             endpoint: endpoint,
-            event_loop: event_loop,
             channels: Vec::new(),
             steps: steps,
             bpm_duration: Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64),
@@ -81,32 +73,7 @@ impl Audact {
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
                          filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
-        let format = self.endpoint.get_supported_formats_list()
-            .unwrap()
-            .fold(None, |f1, f2| {
-                if f1.is_none() {
-                    return Some(f2);
-                }
-                let f1 = f1.unwrap();
-                // We privilege f32 formats to avoid a conversion.
-                if f2.data_type == cpal::SampleFormat::F32 && f1.data_type != cpal::SampleFormat::F32 {
-                    return Some(f2);
-                }
-                // Do not go below 44100 if possible.
-                if f1.samples_rate.0 < 44100 {
-                    return Some(f2);
-                }
-                // Priviledge outputs with 2 channels for now.
-                if f2.channels.len() == 2 && f1.channels.len() != 2 {
-                    return Some(f2);
-                }
-
-                Some(f1)
-            })
-            .expect("The endpoint doesn't support any format!?");
-
-        let (voice, stream) = cpal::Voice::new(&self.endpoint, &format,
-                                                   &self.event_loop).expect("Failed to create a voice");
+        let sink = Sink::new(&self.endpoint);
 
         let wave = match wave {
             Wave::Sine => Audact::sine_wave,
@@ -117,48 +84,21 @@ impl Audact {
 
         let (hp, lp) = filter;
 
-        let samples_rate = format.samples_rate.0 as f32;
-        let mut data_source = (0u64..).map(move |t| t as f32 * freq * PI / samples_rate) // freq
+        let samples_rate = 44100f32;
+        let data_source = (0u64..).map(move |t| t as f32 * freq * PI / samples_rate) // freq
             .map(wave) // waveform creation
             .map(move |(_, s)| {
-                s.max(hp) // high pass
-                    .min(lp) // low pass
-                    * volume * 0.1f32 // volume
-            });// hard edge filtering & volume
+                let sample = s.max(hp) // high pass
+                    .min(lp); // low pass
 
-        let task = stream.for_each(move |buffer| -> Result<_, ()> {
-            match buffer {
-                UnknownTypeBuffer::F32(mut buffer) => {
-                    for (out, value) in buffer.iter_mut().zip(&mut data_source) {
-                        *out = value;
-                    }
-                },
-                UnknownTypeBuffer::U16(mut buffer) => {
-                    for (out, value) in buffer.iter_mut().zip(&mut data_source) {
-                        *out = ((value * 0.5 + 0.5) * u16::MAX as f32) as u16;
-                    }
-                },
-                UnknownTypeBuffer::I16(mut buffer) => {
-                    for (out, value) in buffer.iter_mut().zip(&mut data_source) {
-                        *out = (value * i16::MAX as f32) as i16;
-                    }
-                },
-            };
+                SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample, sample, sample])
+            }); // hard edge filtering & volume
 
-            Ok(())
-        });
 
-        {
-            struct AudactExecutor;
-            impl Executor for AudactExecutor {
-                fn execute(&self, r: Run) {
-                    r.run();
-                }
-            }
-            task::spawn(task).execute(Arc::new(AudactExecutor));
-        }
+        let source = source::from_iter(data_source);
+        sink.append(source.amplify(volume));
 
-        self.channels.push((voice, seq));
+        self.channels.push((sink, seq));
 
         Ok(true)
     }
@@ -168,8 +108,7 @@ impl Audact {
         // grab some values from the stuct to be moved
         let steps = audact.steps;
         let bpm_duration = audact.bpm_duration;
-        let mut tmp_voice_channels = audact.channels;
-        let tmp_event_loop = audact.event_loop;
+        let tmp_voice_channels = audact.channels;
 
         let handle = thread::spawn(move || {
             for _ in 0 .. bars {
@@ -191,9 +130,6 @@ impl Audact {
             }
         });
 
-        thread::spawn(move || {
-            tmp_event_loop.run();
-        });
 
         let _ = handle.join().unwrap();
     }
