@@ -28,9 +28,8 @@ fn main() {
 
 #![deny(missing_docs)]
 
-extern crate cpal;
-extern crate futures;
 extern crate rand;
+extern crate rodio;
 
 /// Module for the main audact system
 pub mod system;
