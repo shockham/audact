@@ -2,6 +2,7 @@ use rodio;
 use rodio::Endpoint;
 use rodio::Sink;
 use rodio::source;
+use rodio::buffer::SamplesBuffer;
 
 use std::thread;
 use std::time::Duration;
@@ -83,19 +84,18 @@ impl Audact {
         let (hp, lp) = filter;
 
         let samples_rate = 44100f32;
-        let mut data_source = (0u64..).map(move |t| t as f32 * freq * PI / samples_rate) // freq
+        let data_source = (0u64..).map(move |t| t as f32 * freq * PI / samples_rate) // freq
             .map(wave) // waveform creation
             .map(move |(_, s)| {
-                s.max(hp) // high pass
+                let sample = s.max(hp) // high pass
                     .min(lp) // low pass
-                    * volume * 0.1f32 // volume
-            });// hard edge filtering & volume
+                    * volume * 0.1f32; // volume
+
+                SamplesBuffer::new(2, 44100, vec![sample, sample, sample, sample])
+            }); // hard edge filtering & volume
 
 
-        //let source = source::from_iter(data_source);
-
-        let source = source::SineWave::new(freq as u32);
-
+        let source = source::from_iter(data_source);
         sink.append(source);
 
         self.channels.push((sink, seq));
