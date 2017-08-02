@@ -89,9 +89,9 @@ impl Audact {
             .map(move |(_, s)| {
                 let sample = s.max(hp) // high pass
                     .min(lp) // low pass
-                    * volume * 0.1f32; // volume
+                    * volume; // volume
 
-                SamplesBuffer::new(2, 44100, vec![sample, sample, sample, sample])
+                SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample, sample, sample])
             }); // hard edge filtering & volume
 
 
