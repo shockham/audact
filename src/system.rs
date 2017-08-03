@@ -112,7 +112,7 @@ impl Audact {
 
         let handle = thread::spawn(move || {
             for _ in 0 .. bars {
-                // simple 16-step sequencer
+                // simple step sequencer
                 for step in 0 .. steps {
                     for i in 0 .. tmp_voice_channels.len() {
                         if let Ok(_) = tmp_voice_channels[i].1.binary_search(&step) {
@@ -126,7 +126,7 @@ impl Audact {
             }
 
             for i in 0 .. tmp_voice_channels.len() {
-                tmp_voice_channels[i].0.pause();
+                tmp_voice_channels[i].0.stop();
             }
         });
 
