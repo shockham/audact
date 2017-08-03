@@ -97,6 +97,7 @@ impl Audact {
 
         let source = source::from_iter(data_source);
         sink.append(source.amplify(volume));
+        sink.pause();
 
         self.channels.push((sink, seq));
 
