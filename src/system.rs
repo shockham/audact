@@ -51,28 +51,29 @@ impl Audact {
     }
 
     /// Generates a sine wave from samples
-    fn sine_wave(t:f32) -> (f32, f32) {
-        (t, t.sin())
+    fn sine_wave(t:f32) -> f32 {
+        t.sin()
     }
 
     /// Generates a square wave from samples
-    fn square_wave(t:f32) -> (f32, f32) {
-        (t, t.sin().round())
+    fn square_wave(t:f32) -> f32 {
+        t.sin().round()
     }
 
     /// Generates a saw-tooth wave from samples
-    fn saw_wave(t:f32) -> (f32, f32) {
-        (t, t - t.floor())
+    fn saw_wave(t:f32) -> f32 {
+        t - t.floor()
     }
 
     /// Generates white noise from samples
-    fn noise_wave(t:f32) -> (f32, f32) {
-        (t, random())
+    fn noise_wave(_:f32) -> f32 {
+        random()
     }
 
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
-                         filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
+                   filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
+        // create the sink to play from
         let sink = Sink::new(&self.endpoint);
 
         let wave = match wave {
@@ -85,14 +86,13 @@ impl Audact {
         let (hp, lp) = filter;
 
         let samples_rate = 44100f32;
-        let data_source = (0u64..).map(move |t| t as f32 * freq * PI / samples_rate) // freq
-            .map(wave) // waveform creation
-            .map(move |(_, s)| {
-                let sample = s.max(hp) // high pass
-                    .min(lp); // low pass
-
-                SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample, sample, sample])
-            }); // hard edge filtering & volume
+        let data_source = (0u64..).map(move |t| {
+            let freq = t as f32 * freq * PI / samples_rate; // freq
+            let s = wave(freq);
+            let sample = s.max(hp).min(lp); // high & low pass
+            // create the sample buffer
+            SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample, sample, sample])
+        });
 
 
         let source = source::from_iter(data_source);
