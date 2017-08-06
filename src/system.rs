@@ -90,7 +90,7 @@ impl Audact {
             let freq = t as f32 * freq * PI / samples_rate; // freq
             let sample = wave(freq).max(hp).min(lp); // high & low pass
             // create the sample buffer
-            SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample, sample, sample])
+            SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample])
         });
 
 
