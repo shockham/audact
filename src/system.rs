@@ -83,19 +83,20 @@ impl Audact {
             Wave::Noise => Audact::noise_wave,
         };
 
-        let (hp, lp) = filter;
+        let (_, lp) = filter;
 
         let samples_rate = 44100f32;
         let data_source = (0u64..).map(move |t| {
             let freq = t as f32 * freq * PI / samples_rate; // freq
-            let sample = wave(freq).max(hp).min(lp); // high & low pass
+            let sample = wave(freq);
             // create the sample buffer
-            SamplesBuffer::new(2, samples_rate as u32, vec![sample, sample])
+            SamplesBuffer::new(2, samples_rate as u32, vec![sample])
         });
 
 
         let source = source::from_iter(data_source);
-        sink.append(source.amplify(volume));
+        sink.append(source.low_pass(lp as u32)
+                    .amplify(volume));
         sink.pause();
 
         self.channels.push((sink, seq));
