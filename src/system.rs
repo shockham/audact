@@ -67,7 +67,7 @@ impl Audact {
 
     /// Generates white noise from samples
     fn noise_wave(_:f32) -> f32 {
-        random()
+        (random::<f32>() * 2f32) - 1f32
     }
 
     /// Add a voice channel to audact for synth playback
