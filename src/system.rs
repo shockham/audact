@@ -72,7 +72,7 @@ impl Audact {
 
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
-                   filter: (f32, f32), seq: Vec<i32>) -> Result<bool, bool> {
+                   filter: (f32, f32), seq: Vec<i32>) {
         // create the sink to play from
         let sink = Sink::new(&self.endpoint);
 
@@ -100,8 +100,6 @@ impl Audact {
         sink.pause();
 
         self.channels.push((sink, seq));
-
-        Ok(true)
     }
 
     /// Kick off audact to start and loop 'bars' times

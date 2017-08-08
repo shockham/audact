@@ -8,7 +8,7 @@ fn main() {
 
     // single test tone
     audact.channel(std_note_freq(0), Wave::Sine,
-                   0.7f32, (0f32, 3000f32), vec![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]).unwrap();
+                   0.7f32, (0f32, 3000f32), vec![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 
     Audact::start(audact, 4);
 }
