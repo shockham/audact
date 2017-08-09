@@ -29,11 +29,19 @@ pub struct Audact {
     /// The endpoint that audact will play through
     endpoint: Endpoint,
     /// Vec of voice channels that audact will play
-    channels: Vec<(Sink, Vec<i32>)>,
+    channels: Vec<Channel>,
     /// The number of steps for the sequencer
     steps: i32,
     /// The duraction that determines the bpm
     bpm_duration: Duration,
+}
+
+/// Stuct to represent a channel
+struct Channel {
+    /// The Sink that the channel plays from
+    sink: Sink,
+    /// The sequence that the channel plays
+    seq: Vec<i32>,
 }
 
 /// implementation for the audact struct
@@ -99,7 +107,9 @@ impl Audact {
                     .amplify(volume));
         sink.pause();
 
-        self.channels.push((sink, seq));
+        let channel = Channel { sink, seq };
+
+        self.channels.push(channel);
     }
 
     /// Kick off audact to start and loop 'bars' times
@@ -114,10 +124,10 @@ impl Audact {
                 // simple step sequencer
                 for step in 0 .. steps {
                     for i in 0 .. tmp_voice_channels.len() {
-                        if let Ok(_) = tmp_voice_channels[i].1.binary_search(&step) {
-                            tmp_voice_channels[i].0.play();
+                        if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
+                            tmp_voice_channels[i].sink.play();
                         } else {
-                            tmp_voice_channels[i].0.pause();
+                            tmp_voice_channels[i].sink.pause();
                         }
                     }
                     thread::sleep(bpm_duration);
@@ -125,7 +135,7 @@ impl Audact {
             }
 
             for i in 0 .. tmp_voice_channels.len() {
-                tmp_voice_channels[i].0.stop();
+                tmp_voice_channels[i].sink.stop();
             }
         });
 
