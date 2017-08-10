@@ -108,7 +108,7 @@ impl Audact {
 
         let samples_rate = self.sample_rate as f32;
         let subsecs = self.bpm_duration.subsec_nanos() as f32 / 100000000f32;
-        let samples_needed = samples_rate * (self.bpm_duration.as_secs() as f32 + subsecs);
+        let samples_needed = samples_rate * ((self.bpm_duration.as_secs() as f32 + subsecs) / 4f32);
 
         let source:Vec<f32> = (0u64..samples_needed as u64).map(move |t| {
             let freq = t as f32 * freq * PI / samples_rate; // freq
@@ -139,21 +139,23 @@ impl Audact {
                         if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
                             if tmp_voice_channels[i].sink.is_paused() {
                                 let chan = &tmp_voice_channels[i];
-                                
+                                // create the Sample buffer
                                 let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
-                                    .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s])).collect();
-
+                                    .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
+                                    .collect();
+                                // processing values
                                 let vol = chan.processing.volume;
                                 let (_, lp) = chan.processing.filter;
-
+                                // create the source
                                 let source = source::from_iter(samples)
                                     .low_pass(lp as u32)
                                     .amplify(vol);
+                                // add source to sink queue
                                 chan.sink.append(source);
                             } 
                             tmp_voice_channels[i].sink.play();
                         } else {
-                            tmp_voice_channels[i].sink.stop();
+                            //tmp_voice_channels[i].sink.stop();
                             tmp_voice_channels[i].sink.pause();
                         }
                     }
