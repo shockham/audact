@@ -137,23 +137,24 @@ impl Audact {
                 for step in 0 .. steps {
                     for i in 0 .. tmp_voice_channels.len() {
                         if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
+                            let chan = &tmp_voice_channels[i];
+                            // create the Sample buffer
+                            let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
+                                .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
+                                .collect();
+                            // processing values
+                            let vol = chan.processing.volume;
+                            let (_, lp) = chan.processing.filter;
+                            // create the source
+                            let source = source::from_iter(samples)
+                                .low_pass(lp as u32)
+                                .amplify(vol);
+                            // add source to sink queue
+                            chan.sink.append(source);
+
                             if tmp_voice_channels[i].sink.is_paused() {
-                                let chan = &tmp_voice_channels[i];
-                                // create the Sample buffer
-                                let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
-                                    .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
-                                    .collect();
-                                // processing values
-                                let vol = chan.processing.volume;
-                                let (_, lp) = chan.processing.filter;
-                                // create the source
-                                let source = source::from_iter(samples)
-                                    .low_pass(lp as u32)
-                                    .amplify(vol);
-                                // add source to sink queue
-                                chan.sink.append(source);
-                            } 
-                            tmp_voice_channels[i].sink.play();
+                                tmp_voice_channels[i].sink.play();
+                            }
                         } else {
                             //tmp_voice_channels[i].sink.stop();
                             tmp_voice_channels[i].sink.pause();
