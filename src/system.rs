@@ -34,6 +34,8 @@ pub struct Audact {
     steps: i32,
     /// The duraction that determines the bpm
     bpm_duration: Duration,
+    /// Sample rate
+    sample_rate: u32,
 }
 
 /// Stuct to represent a channel
@@ -42,6 +44,18 @@ struct Channel {
     sink: Sink,
     /// The sequence that the channel plays
     seq: Vec<i32>,
+    /// The samples the channel plays
+    source: Vec<f32>,
+    /// Processing for the channel
+    processing: Processing,
+}
+
+/// Represents processing values on a channel
+struct Processing {
+    /// Volume
+    volume: f32,
+    /// Filter
+    filter: (f32, f32),
 }
 
 /// implementation for the audact struct
@@ -55,6 +69,7 @@ impl Audact {
             channels: Vec::new(),
             steps: steps,
             bpm_duration: Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64),
+            sample_rate: 44100u32,
         }
     }
 
@@ -91,23 +106,19 @@ impl Audact {
             Wave::Noise => Audact::noise_wave,
         };
 
-        let (_, lp) = filter;
+        let samples_rate = self.sample_rate as f32;
+        let subsecs = self.bpm_duration.subsec_nanos() as f32 / 100000000f32;
+        let samples_needed = samples_rate * (self.bpm_duration.as_secs() as f32 + subsecs);
 
-        let samples_rate = 44100f32;
-        let data_source = (0u64..).map(move |t| {
+        let source:Vec<f32> = (0u64..samples_needed as u64).map(move |t| {
             let freq = t as f32 * freq * PI / samples_rate; // freq
-            let sample = wave(freq);
-            // create the sample buffer
-            SamplesBuffer::new(2, samples_rate as u32, vec![sample])
-        });
+            wave(freq)
+        }).collect();
 
-
-        let source = source::from_iter(data_source);
-        sink.append(source.low_pass(lp as u32)
-                    .amplify(volume));
         sink.pause();
 
-        let channel = Channel { sink, seq };
+        let processing = Processing { volume, filter };
+        let channel = Channel { sink, seq, source, processing };
 
         self.channels.push(channel);
     }
@@ -118,6 +129,7 @@ impl Audact {
         let steps = audact.steps;
         let bpm_duration = audact.bpm_duration;
         let tmp_voice_channels = audact.channels;
+        let sample_rate = audact.sample_rate;
 
         let handle = thread::spawn(move || {
             for _ in 0 .. bars {
@@ -125,8 +137,26 @@ impl Audact {
                 for step in 0 .. steps {
                     for i in 0 .. tmp_voice_channels.len() {
                         if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
+                            if tmp_voice_channels[i].sink.is_paused() {
+                                let chan = &tmp_voice_channels[i];
+                                
+                                let mut samples = Vec::new();
+                                for i in 0 .. chan.source.len() {
+                                    let buff = SamplesBuffer::new(2, sample_rate, vec![chan.source[i]]);
+                                    samples.push(buff);
+                                }
+
+                                let vol = chan.processing.volume;
+                                let (_, lp) = chan.processing.filter;
+
+                                let source = source::from_iter(samples)
+                                    .low_pass(lp as u32)
+                                    .amplify(vol);
+                                chan.sink.append(source);
+                            } 
                             tmp_voice_channels[i].sink.play();
                         } else {
+                            tmp_voice_channels[i].sink.stop();
                             tmp_voice_channels[i].sink.pause();
                         }
                     }
