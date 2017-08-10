@@ -140,11 +140,8 @@ impl Audact {
                             if tmp_voice_channels[i].sink.is_paused() {
                                 let chan = &tmp_voice_channels[i];
                                 
-                                let mut samples = Vec::new();
-                                for i in 0 .. chan.source.len() {
-                                    let buff = SamplesBuffer::new(2, sample_rate, vec![chan.source[i]]);
-                                    samples.push(buff);
-                                }
+                                let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
+                                    .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s])).collect();
 
                                 let vol = chan.processing.volume;
                                 let (_, lp) = chan.processing.filter;
