@@ -56,6 +56,8 @@ struct Processing {
     volume: f32,
     /// Filter
     filter: (f32, f32),
+    /// Attack
+    attack: Duration,
 }
 
 /// implementation for the audact struct
@@ -95,7 +97,7 @@ impl Audact {
 
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
-                   filter: (f32, f32), seq: Vec<i32>) {
+                   filter: (f32, f32), attack: f32, seq: Vec<i32>) {
         // create the sink to play from
         let sink = Sink::new(&self.endpoint);
 
@@ -117,7 +119,9 @@ impl Audact {
 
         sink.pause();
 
-        let processing = Processing { volume, filter };
+        let attack = Duration::from_millis(attack as u64);
+
+        let processing = Processing { volume, filter, attack };
         let channel = Channel { sink, seq, source, processing };
 
         self.channels.push(channel);
@@ -145,8 +149,10 @@ impl Audact {
                             // processing values
                             let vol = chan.processing.volume;
                             let (_, lp) = chan.processing.filter;
+                            let attack = chan.processing.attack;
                             // create the source
                             let source = source::from_iter(samples)
+                                .fade_in(attack)
                                 .low_pass(lp as u32)
                                 .amplify(vol);
                             // add source to sink queue
