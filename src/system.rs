@@ -102,7 +102,6 @@ impl Audact {
         let sink = Sink::new(&self.endpoint);
         sink.pause();
 
-
         // Calculate the number of samples needed per step
         let samples_rate = self.sample_rate as f32;
         let subsecs = self.bpm_duration.subsec_nanos() as f32 / 100000000f32;
@@ -110,8 +109,9 @@ impl Audact {
 
         // Create the basic waveform samples
         let source:Vec<f32> = (0u64..samples_needed as u64).map(move |t| {
+            // Calc the freq for the wave
             let freq = t as f32 * freq * PI / samples_rate; // freq
-
+            // Call the wave gen fn
             match wave {
                 Wave::Sine => Audact::sine_wave(freq),
                 Wave::Square => Audact::square_wave(freq),
@@ -135,48 +135,45 @@ impl Audact {
         let bpm_duration = audact.bpm_duration;
         let tmp_voice_channels = audact.channels;
         let sample_rate = audact.sample_rate;
+        // The repeats of the sequence
+        for _ in 0 .. bars {
+            // simple step sequencer
+            for step in 0 .. steps {
+                for i in 0 .. tmp_voice_channels.len() {
+                    // Check if the channel is triggered this step
+                    if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
+                        let chan = &tmp_voice_channels[i];
+                        // create the Sample buffer
+                        let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
+                            .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
+                            .collect();
+                        // processing values
+                        let vol = chan.processing.volume;
+                        let (_, lp) = chan.processing.filter;
+                        let attack = chan.processing.attack;
+                        // create the source
+                        let source = source::from_iter(samples)
+                            .fade_in(attack)
+                            .low_pass(lp as u32)
+                            .amplify(vol);
+                        // add source to sink queue
+                        chan.sink.append(source);
 
-        let handle = thread::spawn(move || {
-            for _ in 0 .. bars {
-                // simple step sequencer
-                for step in 0 .. steps {
-                    for i in 0 .. tmp_voice_channels.len() {
-                        if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
-                            let chan = &tmp_voice_channels[i];
-                            // create the Sample buffer
-                            let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
-                                .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
-                                .collect();
-                            // processing values
-                            let vol = chan.processing.volume;
-                            let (_, lp) = chan.processing.filter;
-                            let attack = chan.processing.attack;
-                            // create the source
-                            let source = source::from_iter(samples)
-                                .fade_in(attack)
-                                .low_pass(lp as u32)
-                                .amplify(vol);
-                            // add source to sink queue
-                            chan.sink.append(source);
-
-                            if tmp_voice_channels[i].sink.is_paused() {
-                                tmp_voice_channels[i].sink.play();
-                            }
-                        } else {
-                            //tmp_voice_channels[i].sink.stop();
-                            tmp_voice_channels[i].sink.pause();
+                        if tmp_voice_channels[i].sink.is_paused() {
+                            tmp_voice_channels[i].sink.play();
                         }
+                    } else {
+                        //tmp_voice_channels[i].sink.stop();
+                        tmp_voice_channels[i].sink.pause();
                     }
-                    thread::sleep(bpm_duration);
                 }
+                // Sleep for the step duration
+                thread::sleep(bpm_duration);
             }
-
-            for i in 0 .. tmp_voice_channels.len() {
-                tmp_voice_channels[i].sink.stop();
-            }
-        });
-
-
-        let _ = handle.join().unwrap();
+        }
+        // Stop all the channels once they sequence has finished
+        for i in 0 .. tmp_voice_channels.len() {
+            tmp_voice_channels[i].sink.stop();
+        }
     }
 }
