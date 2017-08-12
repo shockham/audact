@@ -100,27 +100,28 @@ impl Audact {
                    filter: (f32, f32), attack: f32, seq: Vec<i32>) {
         // create the sink to play from
         let sink = Sink::new(&self.endpoint);
+        sink.pause();
 
-        let wave = match wave {
-            Wave::Sine => Audact::sine_wave,
-            Wave::Square => Audact::square_wave,
-            Wave::Saw => Audact::saw_wave,
-            Wave::Noise => Audact::noise_wave,
-        };
 
+        // Calculate the number of samples needed per step
         let samples_rate = self.sample_rate as f32;
         let subsecs = self.bpm_duration.subsec_nanos() as f32 / 100000000f32;
         let samples_needed = samples_rate * ((self.bpm_duration.as_secs() as f32 + subsecs) / 4f32);
 
+        // Create the basic waveform samples
         let source:Vec<f32> = (0u64..samples_needed as u64).map(move |t| {
             let freq = t as f32 * freq * PI / samples_rate; // freq
-            wave(freq)
+
+            match wave {
+                Wave::Sine => Audact::sine_wave(freq),
+                Wave::Square => Audact::square_wave(freq),
+                Wave::Saw => Audact::saw_wave(freq),
+                Wave::Noise => Audact::noise_wave(freq),
+            }
         }).collect();
 
-        sink.pause();
-
+        // Create the processing chain and channel
         let attack = Duration::from_millis(attack as u64);
-
         let processing = Processing { volume, filter, attack };
         let channel = Channel { sink, seq, source, processing };
 
