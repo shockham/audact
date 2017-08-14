@@ -6,7 +6,7 @@ use rodio::buffer::SamplesBuffer;
 use rodio::Source;
 
 use std::thread;
-use std::time::Duration;
+use std::time::{ Duration, Instant };
 use std::f32::consts::PI;
 
 use rand::random;
@@ -67,13 +67,13 @@ impl Audact {
     /// Creates a new instance of audact
     pub fn new(steps:i32, bpm:i32, per_bar:f32) -> Audact {
         let endpoint = rodio::get_default_endpoint().unwrap();
-
-        // Calculate the number of samples needed per step
+        // Sample rate and step duration
         let samples_rate = 44100f32;
         let bpm_duration = Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64);
+        // Calculate the number of samples needed per step
         let subsecs = bpm_duration.subsec_nanos() as f32 / 100000000f32;
         let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32);
-
+        // Create and return instance
         Audact {
             endpoint: endpoint,
             channels: Vec::new(),
@@ -147,6 +147,7 @@ impl Audact {
         for _ in 0 .. bars {
             // simple step sequencer
             for step in 0 .. steps {
+                let instant = Instant::now();
                 for i in 0 .. tmp_voice_channels.len() {
                     // Check if the channel is triggered this step
                     if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
@@ -176,7 +177,7 @@ impl Audact {
                     }
                 }
                 // Sleep for the step duration
-                thread::sleep(bpm_duration);
+                thread::sleep(bpm_duration - instant.elapsed());
             }
         }
         // Stop all the channels once they sequence has finished
