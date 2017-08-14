@@ -36,6 +36,8 @@ pub struct Audact {
     bpm_duration: Duration,
     /// Sample rate
     sample_rate: u32,
+    /// Samples needed per step
+    samples_needed: f32,
 }
 
 /// Stuct to represent a channel
@@ -66,12 +68,19 @@ impl Audact {
     pub fn new(steps:i32, bpm:i32, per_bar:f32) -> Audact {
         let endpoint = rodio::get_default_endpoint().unwrap();
 
+        // Calculate the number of samples needed per step
+        let samples_rate = 44100f32;
+        let bpm_duration = Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64);
+        let subsecs = bpm_duration.subsec_nanos() as f32 / 100000000f32;
+        let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32);
+
         Audact {
             endpoint: endpoint,
             channels: Vec::new(),
             steps: steps,
-            bpm_duration: Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64),
-            sample_rate: 44100u32,
+            bpm_duration: bpm_duration,
+            sample_rate: samples_rate as u32,
+            samples_needed: samples_needed,
         }
     }
 
@@ -104,13 +113,10 @@ impl Audact {
         sink.pause();
         sink.set_volume(volume);
 
-        // Calculate the number of samples needed per step
         let samples_rate = self.sample_rate as f32;
-        let subsecs = self.bpm_duration.subsec_nanos() as f32 / 100000000f32;
-        let samples_needed = samples_rate * ((self.bpm_duration.as_secs() as f32 + subsecs) / 4f32);
 
         // Create the basic waveform samples
-        let source:Vec<f32> = (0u64..samples_needed as u64).map(move |t| {
+        let source:Vec<f32> = (0u64..self.samples_needed as u64).map(move |t| {
             // Calc the freq for the wave
             let freq = t as f32 * freq * PI / samples_rate; // freq
             // Call the wave gen fn
