@@ -53,13 +53,13 @@ struct Channel {
 }
 
 /// Represents processing values on a channel
-#[derive(Builder)]
-struct Processing {
+#[derive(Builder, Clone, Copy)]
+pub struct Processing {
     /// Volume
-    #[builder(default="0f32")]
+    #[builder(default="1f32")]
     gain: f32,
     /// Filter
-    #[builder(default="(0f32, 0f32)")]
+    #[builder(default="(0f32, 5000f32)")]
     filter: (f32, f32),
     /// Attack
     #[builder(default="Duration::from_millis(0u64)")]
@@ -110,8 +110,7 @@ impl Audact {
 
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
-                   filter: (f32, f32), attack: f32, gain: f32,
-                   seq: Vec<i32>) {
+                   processing: Processing, seq: Vec<i32>) {
         // create the sink to play from
         let mut sink = Sink::new(&self.endpoint);
         sink.pause();
@@ -133,8 +132,6 @@ impl Audact {
         }).collect();
 
         // Create the processing chain and channel
-        let attack = Duration::from_millis(attack as u64);
-        let processing = Processing { gain, filter, attack };
         let channel = Channel { sink, seq, source, processing };
 
         self.channels.push(channel);
