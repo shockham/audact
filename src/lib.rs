@@ -30,6 +30,8 @@ fn main() {
 
 extern crate rand;
 extern crate rodio;
+#[macro_use]
+extern crate derive_builder;
 
 /// Module for the main audact system
 pub mod system;

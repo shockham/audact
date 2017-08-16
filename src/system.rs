@@ -53,12 +53,16 @@ struct Channel {
 }
 
 /// Represents processing values on a channel
+#[derive(Builder)]
 struct Processing {
     /// Volume
+    #[builder(default="0f32")]
     gain: f32,
     /// Filter
+    #[builder(default="(0f32, 0f32)")]
     filter: (f32, f32),
     /// Attack
+    #[builder(default="Duration::from_millis(0u64)")]
     attack: Duration,
 }
 

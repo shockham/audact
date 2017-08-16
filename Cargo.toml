@@ -12,3 +12,4 @@ description = "Simple synth and sequencing lib"
 [dependencies]
 rand = "0.3.15"
 rodio = "0.5"
+derive_builder = "0.5"
