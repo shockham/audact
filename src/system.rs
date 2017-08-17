@@ -157,23 +157,18 @@ impl Audact {
                         let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
                             .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
                             .collect();
-                        // processing values
-                        let gain = chan.processing.gain;
-                        let (_, lp) = chan.processing.filter;
-                        let attack = chan.processing.attack;
                         // create the source
                         let source = source::from_iter(samples)
-                            .fade_in(attack)
-                            .low_pass(lp as u32)
-                            .amplify(gain);
+                            .fade_in(chan.processing.attack)
+                            .low_pass(chan.processing.filter.1 as u32)
+                            .amplify(chan.processing.gain);
                         // add source to sink queue
                         chan.sink.append(source);
-
+                        // call play if not already
                         if tmp_voice_channels[i].sink.is_paused() {
                             tmp_voice_channels[i].sink.play();
                         }
                     } else {
-                        //tmp_voice_channels[i].sink.stop();
                         tmp_voice_channels[i].sink.pause();
                     }
                 }
