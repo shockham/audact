@@ -154,9 +154,7 @@ impl Audact {
                     if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
                         let chan = &tmp_voice_channels[i];
                         // create the Sample buffer
-                        let samples: Vec<SamplesBuffer<f32>> = chan.source.iter()
-                            .map(|&s| SamplesBuffer::new(2, sample_rate, vec![s]))
-                            .collect();
+                        let samples = vec![SamplesBuffer::new(2, sample_rate, chan.source.clone())];
                         // create the source
                         let source = source::from_iter(samples)
                             .fade_in(chan.processing.attack)
