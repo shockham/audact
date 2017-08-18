@@ -76,7 +76,7 @@ impl Audact {
         let bpm_duration = Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64);
         // Calculate the number of samples needed per step
         let subsecs = bpm_duration.subsec_nanos() as f32 / 100000000f32;
-        let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32);
+        let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32) * 0.8f32;
         // Create and return instance
         Audact {
             endpoint: endpoint,
