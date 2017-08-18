@@ -6,7 +6,7 @@ use rodio::buffer::SamplesBuffer;
 use rodio::Source;
 
 use std::thread;
-use std::time::{ Duration, Instant };
+use std::time::Duration;
 use std::f32::consts::PI;
 
 use rand::random;
@@ -148,32 +148,30 @@ impl Audact {
         for _ in 0 .. bars {
             // simple step sequencer
             for step in 0 .. steps {
-                let instant = Instant::now();
                 for i in 0 .. tmp_voice_channels.len() {
-                    // Check if the channel is triggered this step
-                    if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
-                        let chan = &tmp_voice_channels[i];
-                        // create the Sample buffer
-                        let samples = vec![SamplesBuffer::new(2, sample_rate, chan.source.clone())];
-                        // create the source
-                        let source = source::from_iter(samples)
-                            .fade_in(chan.processing.attack)
-                            .low_pass(chan.processing.filter.1 as u32)
-                            .amplify(chan.processing.gain);
-                        // add source to sink queue
-                        chan.sink.append(source);
-                        // call play if not already
-                        if tmp_voice_channels[i].sink.is_paused() {
-                            tmp_voice_channels[i].sink.play();
-                        }
+                    let chan = &tmp_voice_channels[i];
+                    // Check if the channel is triggered this step and get source samples or silence
+                    let samples = if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
+                        chan.source.clone()
                     } else {
-                        tmp_voice_channels[i].sink.pause();
-                    }
+                        vec![0f32; audact.samples_needed as usize]
+                    };
+                    // create buffer
+                    let sample_buffer = vec![SamplesBuffer::new(2, sample_rate, samples)];
+                    // create the source
+                    let source = source::from_iter(sample_buffer)
+                        .fade_in(chan.processing.attack)
+                        .low_pass(chan.processing.filter.1 as u32)
+                        .amplify(chan.processing.gain);
+                    // add source to sink queue
+                    chan.sink.append(source);
+                    // Play the channel
+                    chan.sink.play();
                 }
-                // Sleep for the step duration
-                thread::sleep(bpm_duration - instant.elapsed());
             }
         }
+        // Sleep until the end of the sequence
+        thread::sleep(bpm_duration * 16u32);
         // Stop all the channels once they sequence has finished
         for i in 0 .. tmp_voice_channels.len() {
             tmp_voice_channels[i].sink.stop();
