@@ -56,27 +56,29 @@ struct Channel {
 #[derive(Builder, Clone, Copy)]
 pub struct Processing {
     /// Volume
-    #[builder(default="1f32")]
+    #[builder(default = "1f32")]
     gain: f32,
     /// Filter
-    #[builder(default="(0f32, 5000f32)")]
+    #[builder(default = "(0f32, 5000f32)")]
     filter: (f32, f32),
     /// Attack
-    #[builder(default="Duration::from_millis(0u64)")]
+    #[builder(default = "Duration::from_millis(0u64)")]
     attack: Duration,
 }
 
 /// implementation for the audact struct
 impl Audact {
     /// Creates a new instance of audact
-    pub fn new(steps:i32, bpm:i32, per_bar:f32) -> Audact {
+    pub fn new(steps: i32, bpm: i32, per_bar: f32) -> Audact {
         let endpoint = rodio::get_default_endpoint().unwrap();
         // Sample rate and step duration
         let samples_rate = 44100f32;
-        let bpm_duration = Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64);
+        let bpm_duration =
+            Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64);
         // Calculate the number of samples needed per step
         let subsecs = bpm_duration.subsec_nanos() as f32 / 100000000f32;
-        let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32) * 0.8f32;
+        let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32) *
+            0.8f32;
         // Create and return instance
         Audact {
             endpoint: endpoint,
@@ -89,28 +91,34 @@ impl Audact {
     }
 
     /// Generates a sine wave from samples
-    fn sine_wave(t:f32) -> f32 {
+    fn sine_wave(t: f32) -> f32 {
         t.sin()
     }
 
     /// Generates a square wave from samples
-    fn square_wave(t:f32) -> f32 {
+    fn square_wave(t: f32) -> f32 {
         t.sin().round()
     }
 
     /// Generates a saw-tooth wave from samples
-    fn saw_wave(t:f32) -> f32 {
+    fn saw_wave(t: f32) -> f32 {
         t - t.floor()
     }
 
     /// Generates white noise from samples
-    fn noise_wave(_:f32) -> f32 {
+    fn noise_wave(_: f32) -> f32 {
         (random::<f32>() * 2f32) - 1f32
     }
 
     /// Add a voice channel to audact for synth playback
-    pub fn channel(&mut self, freq: f32, wave: Wave, volume: f32,
-                   processing: Processing, seq: Vec<i32>) {
+    pub fn channel(
+        &mut self,
+        freq: f32,
+        wave: Wave,
+        volume: f32,
+        processing: Processing,
+        seq: Vec<i32>,
+    ) {
         // create the sink to play from
         let mut sink = Sink::new(&self.endpoint);
         sink.pause();
@@ -119,36 +127,43 @@ impl Audact {
         let samples_rate = self.sample_rate as f32;
 
         // Create the basic waveform samples
-        let source:Vec<f32> = (0u64..self.samples_needed as u64).map(move |t| {
-            // Calc the freq for the wave
-            let freq = t as f32 * freq * PI / samples_rate; // freq
-            // Call the wave gen fn
-            match wave {
-                Wave::Sine => Audact::sine_wave(freq),
-                Wave::Square => Audact::square_wave(freq),
-                Wave::Saw => Audact::saw_wave(freq),
-                Wave::Noise => Audact::noise_wave(freq),
-            }
-        }).collect();
+        let source: Vec<f32> = (0u64..self.samples_needed as u64)
+            .map(move |t| {
+                // Calc the freq for the wave
+                let freq = t as f32 * freq * PI / samples_rate; // freq
+                // Call the wave gen fn
+                match wave {
+                    Wave::Sine => Audact::sine_wave(freq),
+                    Wave::Square => Audact::square_wave(freq),
+                    Wave::Saw => Audact::saw_wave(freq),
+                    Wave::Noise => Audact::noise_wave(freq),
+                }
+            })
+            .collect();
 
         // Create the processing chain and channel
-        let channel = Channel { sink, seq, source, processing };
+        let channel = Channel {
+            sink,
+            seq,
+            source,
+            processing,
+        };
 
         self.channels.push(channel);
     }
 
     /// Kick off audact to start and loop 'bars' times
-    pub fn start(audact:Audact, bars: i32) {
+    pub fn start(audact: Audact, bars: i32) {
         // grab some values from the stuct to be moved
         let steps = audact.steps;
         let bpm_duration = audact.bpm_duration;
         let tmp_voice_channels = audact.channels;
         let sample_rate = audact.sample_rate;
         // The repeats of the sequence
-        for _ in 0 .. bars {
+        for _ in 0..bars {
             // simple step sequencer
-            for step in 0 .. steps {
-                for i in 0 .. tmp_voice_channels.len() {
+            for step in 0..steps {
+                for i in 0..tmp_voice_channels.len() {
                     let chan = &tmp_voice_channels[i];
                     // Check if the channel is triggered this step and get source samples or silence
                     let samples = if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
@@ -173,7 +188,7 @@ impl Audact {
         // Sleep until the end of the sequence
         thread::sleep(bpm_duration * 16u32);
         // Stop all the channels once they sequence has finished
-        for i in 0 .. tmp_voice_channels.len() {
+        for i in 0..tmp_voice_channels.len() {
             tmp_voice_channels[i].sink.stop();
         }
     }

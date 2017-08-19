@@ -1,10 +1,10 @@
 /// Calculate notes from a base note and intervals
-pub fn note_freq(base_freq:f32, interval:i32, note_offset:i32) -> f32 {
+pub fn note_freq(base_freq: f32, interval: i32, note_offset: i32) -> f32 {
     base_freq * (2f32.powf(1f32 / interval as f32)).powf(note_offset as f32)
 }
 
 /// Calculate note from offset on standard scale
-pub fn std_note_freq(note_offset:i32) -> f32 {
+pub fn std_note_freq(note_offset: i32) -> f32 {
     note_freq(440f32, 12i32, note_offset)
 }
 
