@@ -3,7 +3,7 @@
 [![Build status](https://travis-ci.org/shockham/audact.svg?branch=master)](https://travis-ci.org/shockham/audact)
 [![Documentation](https://docs.rs/audact/badge.svg)](https://docs.rs/audact)
 
-Simple synth and sequencing lib
+Minimalist synth and sequencing lib
 
 Contains:
 - Simple sine, square, saw and noise waveforms.

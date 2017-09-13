@@ -7,7 +7,7 @@ readme = "README.md"
 repository = "https://github.com/shockham/audact"
 homepage = "https://github.com/shockham/audact"
 documentation = "https://docs.rs/audact"
-description = "Simple synth and sequencing lib"
+description = "Minimalist synth and sequencing lib"
 
 [dependencies]
 rand = "0.3.15"

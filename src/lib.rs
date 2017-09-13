@@ -1,5 +1,5 @@
 /*!
-Simple synth and sequencing lib.
+Minimalist synth and sequencing lib.
 
 Contains:
 - Simple sine, square, saw and noise waveforms.
