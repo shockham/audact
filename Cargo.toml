@@ -10,6 +10,6 @@ documentation = "https://docs.rs/audact"
 description = "Minimalist synth and sequencing lib"
 
 [dependencies]
-rand = "0.3.15"
+rand = "0.4"
 rodio = "0.5"
 derive_builder = "0.5"
