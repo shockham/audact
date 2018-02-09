@@ -70,7 +70,7 @@ pub struct Processing {
 impl Audact {
     /// Creates a new instance of audact
     pub fn new(steps: i32, bpm: i32, per_bar: f32) -> Audact {
-        let endpoint = rodio::get_default_endpoint().unwrap();
+        let endpoint = rodio::default_endpoint().unwrap();
         // Sample rate and step duration
         let samples_rate = 44100f32;
         let bpm_duration =
