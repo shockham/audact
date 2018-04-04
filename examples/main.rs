@@ -93,5 +93,5 @@ fn main() {
         vec![0, 4, 8, 12],
     );
 
-    Audact::start(audact, 1);
+    audact.start(1);
 }
