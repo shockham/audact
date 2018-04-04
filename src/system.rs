@@ -153,12 +153,13 @@ impl Audact {
     }
 
     /// Kick off audact to start and loop 'bars' times
-    pub fn start(audact: Audact, bars: i32) {
+    pub fn start(&mut self, bars: i32) {
         // grab some values from the stuct to be moved
-        let steps = audact.steps;
-        let bpm_duration = audact.bpm_duration;
-        let tmp_voice_channels = audact.channels;
-        let sample_rate = audact.sample_rate;
+        let steps = self.steps;
+        let bpm_duration = self.bpm_duration;
+        let tmp_voice_channels = &self.channels;
+        let sample_rate = self.sample_rate;
+        let samples_needed = self.samples_needed as usize;
         // The repeats of the sequence
         for _ in 0..bars {
             // simple step sequencer
@@ -169,7 +170,7 @@ impl Audact {
                     let samples = if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
                         chan.source.clone()
                     } else {
-                        vec![0f32; audact.samples_needed as usize]
+                        vec![0f32; samples_needed]
                     };
                     // create buffer
                     let sample_buffer = vec![SamplesBuffer::new(2, sample_rate, samples)];
