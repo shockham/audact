@@ -24,6 +24,6 @@ fn main() {
     );
 
     // play the patterns one after another
-    Audact::start(pattern_1, 1);
-    Audact::start(pattern_2, 1);
+    pattern_1.start(1);
+    pattern_2.start(1);
 }
