@@ -81,12 +81,12 @@ impl Audact {
             0.8f32;
         // Create and return instance
         Audact {
-            endpoint: endpoint,
+            endpoint,
             channels: Vec::new(),
-            steps: steps,
-            bpm_duration: bpm_duration,
+            steps,
+            bpm_duration,
             sample_rate: samples_rate as u32,
-            samples_needed: samples_needed,
+            samples_needed,
         }
     }
 
