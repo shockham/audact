@@ -164,10 +164,9 @@ impl Audact {
         for _ in 0..bars {
             // simple step sequencer
             for step in 0..steps {
-                for i in 0..tmp_voice_channels.len() {
-                    let chan = &tmp_voice_channels[i];
+                for chan in tmp_voice_channels {
                     // Check if the channel is triggered this step and get source samples or silence
-                    let samples = if let Ok(_) = tmp_voice_channels[i].seq.binary_search(&step) {
+                    let samples = if let Ok(_) = chan.seq.binary_search(&step) {
                         chan.source.clone()
                     } else {
                         vec![0f32; samples_needed]
@@ -189,8 +188,8 @@ impl Audact {
         // Sleep until the end of the sequence
         thread::sleep(bpm_duration * 16u32);
         // Stop all the channels once they sequence has finished
-        for i in 0..tmp_voice_channels.len() {
-            tmp_voice_channels[i].sink.stop();
+        for chan in tmp_voice_channels {
+            chan.sink.stop();
         }
     }
 }
