@@ -166,7 +166,7 @@ impl Audact {
             for step in 0..steps {
                 for chan in tmp_voice_channels {
                     // Check if the channel is triggered this step and get source samples or silence
-                    let samples = if let Ok(_) = chan.seq.binary_search(&step) {
+                    let samples = if chan.seq.binary_search(&step).is_ok() {
                         chan.source.clone()
                     } else {
                         vec![0f32; samples_needed]
