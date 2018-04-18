@@ -35,7 +35,7 @@ extern crate rodio;
 #[macro_use]
 extern crate derive_builder;
 
-/// Module for the main audact system
-pub mod system;
 /// Module containing note frequencies
 pub mod notes;
+/// Module for the main audact system
+pub mod system;

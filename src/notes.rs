@@ -8,7 +8,6 @@ pub fn std_note_freq(note_offset: i32) -> f32 {
     note_freq(440f32, 12i32, note_offset)
 }
 
-
 #[test]
 fn test_note_freq() {
     assert_eq!(note_freq(440f32, 12, 2), 493.88336);

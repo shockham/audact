@@ -1,7 +1,7 @@
 extern crate audact;
 
-use audact::system::{Audact, Wave, ProcessingBuilder};
 use audact::notes::std_note_freq;
+use audact::system::{Audact, ProcessingBuilder, Wave};
 
 use std::time::Duration;
 

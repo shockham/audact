@@ -1,7 +1,7 @@
 extern crate audact;
 
-use audact::system::{Audact, Wave, ProcessingBuilder};
 use audact::notes::std_note_freq;
+use audact::system::{Audact, ProcessingBuilder, Wave};
 
 fn main() {
     let mut pattern_1 = Audact::new(16, 100, 4f32);
@@ -12,7 +12,6 @@ fn main() {
         ProcessingBuilder::default().build().unwrap(),
         vec![0, 1, 4, 5, 8, 9, 12],
     );
-
 
     let mut pattern_2 = Audact::new(16, 100, 4f32);
     pattern_2.channel(

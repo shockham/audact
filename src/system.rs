@@ -1,16 +1,15 @@
 use rodio;
+use rodio::buffer::SamplesBuffer;
+use rodio::source;
 use rodio::Endpoint;
 use rodio::Sink;
-use rodio::source;
-use rodio::buffer::SamplesBuffer;
 use rodio::Source;
 
+use std::f32::consts::PI;
 use std::thread;
 use std::time::Duration;
-use std::f32::consts::PI;
 
 use rand::random;
-
 
 /// Enum of available waveforms
 pub enum Wave {
@@ -77,8 +76,8 @@ impl Audact {
             Duration::from_millis((((60f32 / bpm as f32) * 1000f32) / per_bar) as u64);
         // Calculate the number of samples needed per step
         let subsecs = bpm_duration.subsec_nanos() as f32 / 100_000_000f32;
-        let samples_needed = samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32) *
-            0.8f32;
+        let samples_needed =
+            samples_rate * ((bpm_duration.as_secs() as f32 + subsecs) / 4f32) * 0.8f32;
         // Create and return instance
         Audact {
             endpoint,
@@ -130,7 +129,7 @@ impl Audact {
         let source: Vec<f32> = (0u64..self.samples_needed as u64)
             .map(move |t| {
                 // Calc the freq for the wave
-                let freq = t as f32 * freq * PI / samples_rate; // freq
+                let freq = t as f32 * freq * PI / samples_rate;
                 // Call the wave gen fn
                 match wave {
                     Wave::Sine => Audact::sine_wave(freq),
