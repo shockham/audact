@@ -1,9 +1,9 @@
 use rodio;
 use rodio::buffer::SamplesBuffer;
 use rodio::source;
-use rodio::Endpoint;
 use rodio::Sink;
 use rodio::Source;
+use rodio::Device;
 
 use std::f32::consts::PI;
 use std::thread;
@@ -26,7 +26,7 @@ pub enum Wave {
 /// Struct for the main audact system
 pub struct Audact {
     /// The endpoint that audact will play through
-    endpoint: Endpoint,
+    endpoint: Device,
     /// Vec of voice channels that audact will play
     channels: Vec<Channel>,
     /// The number of steps for the sequencer
@@ -69,7 +69,7 @@ pub struct Processing {
 impl Audact {
     /// Creates a new instance of audact
     pub fn new(steps: i32, bpm: i32, per_bar: f32) -> Audact {
-        let endpoint = rodio::default_endpoint().unwrap();
+        let endpoint = rodio::default_output_device().unwrap();
         // Sample rate and step duration
         let samples_rate = 44100f32;
         let bpm_duration =

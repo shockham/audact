@@ -11,5 +11,5 @@ description = "Minimalist synth and sequencing lib"
 
 [dependencies]
 rand = "0.4"
-rodio = "0.6"
+rodio = "0.7"
 derive_builder = "0.5"
