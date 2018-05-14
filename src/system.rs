@@ -1,9 +1,9 @@
 use rodio;
 use rodio::buffer::SamplesBuffer;
 use rodio::source;
+use rodio::Device;
 use rodio::Sink;
 use rodio::Source;
-use rodio::Device;
 
 use std::f32::consts::PI;
 use std::thread;
