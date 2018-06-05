@@ -6,7 +6,6 @@ use rodio::Sink;
 use rodio::Source;
 
 use std::f32::consts::PI;
-use std::thread;
 use std::time::Duration;
 
 use rand::random;
@@ -31,8 +30,6 @@ pub struct Audact {
     channels: Vec<Channel>,
     /// The number of steps for the sequencer
     steps: i32,
-    /// The duraction that determines the bpm
-    bpm_duration: Duration,
     /// Sample rate
     sample_rate: u32,
     /// Samples needed per step
@@ -83,7 +80,6 @@ impl Audact {
             endpoint,
             channels: Vec::new(),
             steps,
-            bpm_duration,
             sample_rate: samples_rate as u32,
             samples_needed,
         }
@@ -155,7 +151,7 @@ impl Audact {
     pub fn start(&mut self, bars: i32) {
         // grab some values from the stuct to be moved
         let steps = self.steps;
-        let bpm_duration = self.bpm_duration;
+        //let bpm_duration = self.bpm_duration;
         let tmp_voice_channels = &self.channels;
         let sample_rate = self.sample_rate;
         let samples_needed = self.samples_needed as usize;
@@ -185,10 +181,8 @@ impl Audact {
             }
         }
         // Sleep until the end of the sequence
-        thread::sleep(bpm_duration * 16u32);
-        // Stop all the channels once they sequence has finished
         for chan in tmp_voice_channels {
-            chan.sink.stop();
+            chan.sink.sleep_until_end();
         }
     }
 }
