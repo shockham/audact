@@ -48,16 +48,24 @@ struct Channel {
 
 /// Represents processing values on a channel
 #[derive(Builder, Clone, Copy)]
+#[builder(default)]
 pub struct Processing {
     /// Volume
-    #[builder(default = "1f32")]
     gain: f32,
     /// Filter
-    #[builder(default = "(0f32, 5000f32)")]
     filter: (f32, f32),
     /// Attack
-    #[builder(default = "Duration::from_millis(0u64)")]
     attack: Duration,
+}
+
+impl Default for Processing {
+    fn default() -> Self {
+        Processing {
+            gain: 1f32,
+            filter: (0f32, 5000f32),
+            attack: Duration::from_millis(0u64),
+        }
+    }
 }
 
 /// implementation for the audact struct
