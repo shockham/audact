@@ -1,14 +1,3 @@
-/*!
-Minimalist synth and sequencing lib.
-
-Contains:
-- Simple sine, square, saw and noise waveforms.
-- Hard-edge cut-off filters.
-- Basic sequencing of a single pattern.
-
-Usage:
-
-```no_run
 extern crate audact;
 
 use audact::notes::std_note_freq;
@@ -43,18 +32,3 @@ fn main() {
 
     audact.start(1);
 }
-```
-
-*/
-
-#![deny(missing_docs)]
-
-extern crate rand;
-extern crate rodio;
-#[macro_use]
-extern crate derive_builder;
-
-/// Module containing note frequencies
-pub mod notes;
-/// Module for the main audact system
-pub mod system;

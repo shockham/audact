@@ -116,14 +116,7 @@ impl Audact {
     }
 
     /// Add a voice channel to audact for synth playback
-    pub fn channel(
-        &mut self,
-        freq: f32,
-        wave: Wave,
-        volume: f32,
-        processing: Processing,
-        seq: Vec<i32>,
-    ) {
+    pub fn channel(&mut self, wave: Wave, volume: f32, processing: Processing, seq: Vec<f32>) {
         // create the sink to play from
         let mut sink = Sink::new(&self.endpoint);
         sink.pause();
@@ -138,7 +131,8 @@ impl Audact {
             .map(move |t| {
                 // Silence if not playing in this step
                 let s_t = total_samples_needed / t as f32;
-                if !seq.contains(&((steps / s_t).floor() as i32)) {
+                let freq = seq[(steps / s_t).floor() as usize];
+                if freq == 0f32 {
                     return 0f32;
                 }
                 // Calc the freq for the wave
