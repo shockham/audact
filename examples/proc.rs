@@ -10,7 +10,6 @@ use rand::Rng;
 
 
 fn main() {
-
     let seq_len = 16;
 
     let mut audact = Audact::new(seq_len, 100, 4f32);
@@ -30,5 +29,5 @@ fn main() {
         seq
     );
 
-    audact.start(1);
+    audact.start(4);
 }
