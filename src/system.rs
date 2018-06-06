@@ -130,7 +130,6 @@ impl Audact {
         sink.set_volume(volume);
 
         let sample_rate = self.sample_rate as f32;
-        let b_seq = seq.clone();
         let steps = self.steps as f32;
         let total_samples_needed = self.total_samples_needed;
 
@@ -139,7 +138,7 @@ impl Audact {
             .map(move |t| {
                 // Silence if not playing in this step
                 let s_t = total_samples_needed / t as f32;
-                if !b_seq.contains(&((steps / s_t).floor() as i32)) {
+                if !seq.contains(&((steps / s_t).floor() as i32)) {
                     return 0f32;
                 }
                 // Calc the freq for the wave
