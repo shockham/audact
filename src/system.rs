@@ -56,6 +56,8 @@ pub struct Processing {
     filter: (f32, f32),
     /// Attack
     attack: Duration,
+    /// Reverb
+    reverb: (Duration, f32),
 }
 
 impl Default for Processing {
@@ -64,6 +66,7 @@ impl Default for Processing {
             gain: 1f32,
             filter: (0f32, 5000f32),
             attack: Duration::from_millis(0u64),
+            reverb: (Duration::from_millis(0), 0f32),
         }
     }
 }
@@ -174,8 +177,10 @@ impl Audact {
                 let sample_buffer = vec![SamplesBuffer::new(2, sample_rate, samples)];
                 // create the source
                 let source = source::from_iter(sample_buffer)
+                    .buffered()
                     .fade_in(chan.processing.attack)
                     .low_pass(chan.processing.filter.1 as u32)
+                    .reverb(chan.processing.reverb.0, chan.processing.reverb.1)
                     .amplify(chan.processing.gain);
                 // add source to sink queue
                 chan.sink.append(source);

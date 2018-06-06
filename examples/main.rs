@@ -10,6 +10,7 @@ fn main() {
 
     let lead_processing = ProcessingBuilder::default()
         .attack(Duration::from_millis(100u64))
+        .reverb((Duration::from_millis(200), 0.8f32))
         .build()
         .unwrap();
 
