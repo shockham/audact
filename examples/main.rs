@@ -1,7 +1,7 @@
 extern crate audact;
 
 use audact::notes::std_note_freq;
-use audact::system::{Audact, ProcessingBuilder, Wave};
+use audact::system::{Audact, Processing, ProcessingBuilder, Wave};
 
 use std::time::Duration;
 
@@ -14,7 +14,7 @@ fn main() {
         .build()
         .unwrap();
 
-    let default_processing = ProcessingBuilder::default().build().unwrap();
+    let default_processing = Processing::default();
 
     //lead
     audact.channel(
