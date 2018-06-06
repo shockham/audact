@@ -1,5 +1,3 @@
-#![feature(iterator_flatten)]
-
 extern crate audact;
 extern crate rand;
 
@@ -18,7 +16,7 @@ fn main() {
 
     let seq:Vec<f32> = (0 .. (seq_len as f32 / 4f32) as usize)
         .map(|_| iter::repeat(std_note_freq(rng.gen_range(-12, 12))).take(4))
-        .flatten()
+        .flat_map(|x| x)
         .collect();
 
     // single test tone
