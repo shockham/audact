@@ -2,9 +2,10 @@ extern crate audact;
 extern crate rand;
 
 use audact::notes::std_note_freq;
-use audact::system::{Audact, Processing, Wave};
+use audact::system::{Audact, ProcessingBuilder, Wave};
 use std::iter;
 use rand::Rng;
+use std::time::Duration;
 
 
 fn main() {
@@ -19,11 +20,17 @@ fn main() {
         .flat_map(|x| x)
         .collect();
 
+    let processing = ProcessingBuilder::default()
+        .attack(Duration::from_millis(300u64))
+        .reverb((Duration::from_millis(200), 0.8f32))
+        .build()
+        .unwrap();
+
     // single test tone
     audact.channel(
         Wave::Sine,
-        0.7f32,
-        Processing::default(),
+        0.3f32,
+        processing,
         seq
     );
 
