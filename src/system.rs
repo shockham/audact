@@ -118,7 +118,7 @@ impl Audact {
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, wave: Wave, volume: f32, processing: Processing, seq: Vec<f32>) {
         // create the sink to play from
-        let mut sink = Sink::new(&self.endpoint);
+        let sink = Sink::new(&self.endpoint);
         sink.pause();
         sink.set_volume(volume);
 
