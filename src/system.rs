@@ -127,7 +127,7 @@ impl Audact {
         let total_samples_needed = self.total_samples_needed;
 
         // Create the basic waveform samples
-        let source: Vec<f32> = (0u64..self.total_samples_needed as u64)
+        let mut source: Vec<f32> = (0u64..self.total_samples_needed as u64)
             .map(move |t| {
                 // Silence if not playing in this step
                 let s_t = total_samples_needed / t as f32;
@@ -146,6 +146,24 @@ impl Audact {
                 }
             })
             .collect();
+
+        // Get rid of clicks by interpolating vol changes
+        // probably smarter ways of doing this
+        fn smooth(source: &mut Vec<f32>) {
+            let mut prev_sample = 0f32;
+            for s in source.iter_mut() {
+                if *s == 0f32 {
+                    *s = prev_sample * 0.99;
+                }
+                prev_sample = *s;
+            }
+        }
+        // smooth note off
+        smooth(&mut source);
+        source.reverse();
+        // reverse to smooth note on then return to original
+        smooth(&mut source);
+        source.reverse();
 
         // Create the processing chain and channel
         let channel = Channel {

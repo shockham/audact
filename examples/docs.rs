@@ -21,7 +21,10 @@ fn main() {
             n_1, 0f32, 0f32, 0f32,
         ],
     );
-    audact.channel(Wave::Square, 1f32, default_processing,
+    audact.channel(
+        Wave::Square,
+        1f32,
+        default_processing,
         vec![
             0f32, 0f32, n_2, 0f32,
             0f32, 0f32, n_2, 0f32,
