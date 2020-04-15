@@ -115,6 +115,27 @@ impl Audact {
         (random::<f32>() * 2f32) - 1f32
     }
 
+    /// Smooth out the generated source
+    fn smooth_source(source: &mut Vec<f32>) {
+        // Get rid of clicks by interpolating vol changes
+        // probably smarter ways of doing this
+        fn smooth(source: &mut Vec<f32>) {
+            let mut prev_sample = 0f32;
+            for s in source.iter_mut() {
+                if *s == 0f32 {
+                    *s = prev_sample * 0.99;
+                }
+                prev_sample = *s;
+            }
+        }
+        // smooth note off
+        smooth(source);
+        source.reverse();
+        // reverse to smooth note on then return to original
+        smooth(source);
+        source.reverse();
+    }
+
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, wave: Wave, volume: f32, processing: Processing, seq: Vec<f32>) {
         // create the sink to play from
@@ -147,23 +168,7 @@ impl Audact {
             })
             .collect();
 
-        // Get rid of clicks by interpolating vol changes
-        // probably smarter ways of doing this
-        fn smooth(source: &mut Vec<f32>) {
-            let mut prev_sample = 0f32;
-            for s in source.iter_mut() {
-                if *s == 0f32 {
-                    *s = prev_sample * 0.99;
-                }
-                prev_sample = *s;
-            }
-        }
-        // smooth note off
-        smooth(&mut source);
-        source.reverse();
-        // reverse to smooth note on then return to original
-        smooth(&mut source);
-        source.reverse();
+        Audact::smooth_source(&mut source);
 
         // Create the processing chain and channel
         let channel = Channel {
