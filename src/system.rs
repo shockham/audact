@@ -129,11 +129,13 @@ impl Audact {
             }
         }
         // smooth note off
-        smooth(source);
-        source.reverse();
-        // reverse to smooth note on then return to original
-        smooth(source);
-        source.reverse();
+        // then reverse to smooth note on then return to original
+        for _ in 0..2 {
+            let mut pad = vec![0f32; 1024usize];
+            source.append(&mut pad);
+            smooth(source);
+            source.reverse();
+        }
     }
 
     /// Add a voice channel to audact for synth playback

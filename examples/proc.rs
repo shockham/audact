@@ -3,10 +3,9 @@ extern crate rand;
 
 use audact::notes::std_note_freq;
 use audact::system::{Audact, ProcessingBuilder, Wave};
-use std::iter;
 use rand::Rng;
+use std::iter;
 use std::time::Duration;
-
 
 fn main() {
     let seq_len = 16;
@@ -15,7 +14,7 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    let seq:Vec<f32> = (0 .. (seq_len as f32 / 4f32) as usize)
+    let seq: Vec<f32> = (0..(seq_len as f32 / 4f32) as usize)
         .map(|_| iter::repeat(std_note_freq(rng.gen_range(-12, 12))).take(4))
         .flat_map(|x| x)
         .collect();
@@ -27,12 +26,7 @@ fn main() {
         .unwrap();
 
     // single test tone
-    audact.channel(
-        Wave::Sine,
-        0.3f32,
-        processing,
-        seq
-    );
+    audact.channel(Wave::Sine, 0.3f32, processing, seq);
 
     audact.start(4);
 }
