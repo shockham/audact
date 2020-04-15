@@ -8,6 +8,7 @@ repository = "https://github.com/shockham/audact"
 homepage = "https://github.com/shockham/audact"
 documentation = "https://docs.rs/audact"
 description = "Minimalist synth and sequencing lib"
+edition = "2018"
 
 [dependencies]
 rand = "0.7"
