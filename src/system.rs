@@ -1,7 +1,8 @@
 use rodio;
 use rodio::buffer::SamplesBuffer;
 use rodio::source;
-use rodio::Device;
+use rodio::OutputStream;
+use rodio::OutputStreamHandle;
 use rodio::Sink;
 use rodio::Source;
 
@@ -24,8 +25,11 @@ pub enum Wave {
 
 /// Struct for the main audact system
 pub struct Audact {
-    /// The device that audact will play through
-    device: Device,
+    /// The output stream that will actually be played through
+    /// kept here as won't work if it is dropped
+    _output_stream: OutputStream,
+    /// The output stream handle that audact will play through
+    output_stream_handle: OutputStreamHandle,
     /// Vec of voice channels that audact will play
     channels: Vec<Channel>,
     /// The number of steps for the sequencer
@@ -75,7 +79,7 @@ impl Default for Processing {
 impl Audact {
     /// Creates a new instance of audact
     pub fn new(steps: i32, bpm: i32, per_bar: f32) -> Audact {
-        let device = rodio::default_output_device().unwrap();
+        let (_output_stream, output_stream_handle) = OutputStream::try_default().unwrap();
         // Sample rate and step duration
         let sample_rate = 44100f32;
         let bpm_duration =
@@ -87,7 +91,8 @@ impl Audact {
         let total_samples_needed = samples_needed * steps as f32;
         // Create and return instance
         Audact {
-            device,
+            _output_stream,
+            output_stream_handle,
             channels: Vec::new(),
             steps,
             sample_rate: sample_rate as u32,
@@ -141,7 +146,7 @@ impl Audact {
     /// Add a voice channel to audact for synth playback
     pub fn channel(&mut self, wave: Wave, volume: f32, processing: Processing, seq: Vec<f32>) {
         // create the sink to play from
-        let sink = Sink::new(&self.device);
+        let sink = Sink::try_new(&self.output_stream_handle).unwrap();
         sink.pause();
         sink.set_volume(volume);
 
